@@ -21,7 +21,7 @@
     "videojs-resolution-switcher": "^0.4.2"
   },
   "scripts": {
-    "start": "npm run build && node app.js",
+    "start": "node app.js",
     "startdev": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
