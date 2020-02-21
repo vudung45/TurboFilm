@@ -1,4 +1,5 @@
 import React from 'react';
+import MoviesList from "./MoviesList"
 
 
 export default class Search extends React.Component {
@@ -7,6 +8,7 @@ export default class Search extends React.Component {
         this.handleChange = this.handleChange.bind(this);
         this.processTextDelay = null;
         this.processText = this.processText.bind(this)
+        this.state = {movies : {}}
     }
 
     handleChange(event) {
@@ -16,14 +18,28 @@ export default class Search extends React.Component {
     }  
 
     processText(txt) { 
-        console.log(txt);
+        if(txt == "")
+            this.setState({"movies": {}})
+        fetch("/api/movie/search?title="+txt)
+        .then(r => r.json())
+        .then(jsonResp => {
+            if(!jsonResp.status)
+                return;
+
+            let movies = []
+            this.setState({"movies": jsonResp.response})
+        }).catch(e => console.log(e))
     }
 
 
     render() {
         return ( 
-            <div className="active-cyan-3 active-cyan-4 mb-4">
-                <input className="form-control" type="text" placeholder="Search" aria-label="Search" onChange={this.handleChange}/>
+            <div class="container">
+
+                <div className="active-cyan-3 active-cyan-4 mb-4">
+                    <input className="form-control" type="text" placeholder="Search" aria-label="Search" onChange={this.handleChange}/>
+                </div>
+                <MoviesList {...{"movies" : this.state.movies}}/>
             </div>
         );
     }
