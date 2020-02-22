@@ -7,11 +7,10 @@ function processSources(sources) {
         if(!source["src"] || !source["type"])
             return;
 
-        let src = source["src"];
+        let src = source["src"].replace(/http:\/\//, "//");
         let type = source["type"].includes("mp4") ? "video/mp4" : (source["type"].includes("hls") ? "application/x-mpegURL" : null);
         let label = source["label"] ? source["label"] : "MOV";
         if(src && type && label) {
-            console.log("here")
             processSources.push({
                 src: src,
                 type: type,
@@ -42,6 +41,56 @@ class IFramePlayer extends React.Component {
         );
     }
 }
+
+class JWMoviePlayer extends React.Component {
+    
+
+    constructor(props){
+        super(props)
+        this.updatePlayer = this.updatePlayer.bind(this)
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        // this.updatePlayer(nextProps.movieSrcs);
+        // // requires switching from 
+        // if(nextProps.movieSrcs && nextProps.movieSrcs.length > 0 && nextProps.movieSrcs[0].type == "iframe" && this.props.movieSrcs != "iframe")
+        //     return true;
+        return false;
+    }
+
+    updatePlayer(newSrcs) {
+        if(newSrcs == null)
+            return;
+
+        if(!this.player)
+            this.player = window.jwplayer(this.videoNode);
+
+        this.player.setup({
+            sources: newSrcs.map(m => { return {
+                file: m["src"],
+                label: m["label"],
+                type: m["type"]
+            }})
+            ,width: "100%", aspectratio: "16:9", primary: "html5", autostart: true, allowscriptaccess: "always"});
+    }
+
+
+
+    componentDidMount(){
+        this.updatePlayer(this.props.movieSrcs);
+    }
+
+    render() {
+
+        return(   
+            <div>
+                <video ref={ node => this.videoNode = node } className="jwplayer"></video>
+            </div>
+        );
+
+    }
+}
+
 class MoviePlayer extends React.Component {
     
 
@@ -70,7 +119,6 @@ class MoviePlayer extends React.Component {
         if(!this.player)
             this.player = videojs(this.videoNode,{
                 controls: true,
-                muted: true,
                 width: 1000,
                 plugins: {
                     videoJsResolutionSwitcher: {
@@ -81,6 +129,7 @@ class MoviePlayer extends React.Component {
             }, () => {
                 console.log('onPlayerReady', this);
                 var player = this.player;
+
                 if(newSrcs.length)
                 {
                     if(newSrcs[0].type == "application/x-mpegURL")
@@ -102,7 +151,6 @@ class MoviePlayer extends React.Component {
 
 
 
-
     componentDidMount(){
        
         if(window) window.videojs = videojs;
@@ -121,6 +169,7 @@ class MoviePlayer extends React.Component {
 
     }
 }
+
 export default class Movie extends React.Component {
 
     constructor(props) {
@@ -280,7 +329,7 @@ export default class Movie extends React.Component {
         return (
         <div className="container">
             <h3>{this.state.movieInfo.title ? this.state.movieInfo.title : "Loading..."}</h3>
-             {this.state.movieSrcs.length > 0 && this.state.movieSrcs[0].type != "iframe" ? <MoviePlayer key={this.state.selection+"_"+this.state.episodeSelection+"_"+this.state.serverSelection} movieSrcs={this.state.movieSrcs}/> :
+             {this.state.movieSrcs.length > 0 && this.state.movieSrcs[0].type != "iframe" ? <JWMoviePlayer key={this.state.selection+"_"+this.state.episodeSelection+"_"+this.state.serverSelection} movieSrcs={this.state.movieSrcs}/> :
                  <IFramePlayer  key={this.state.selection+"_"+this.state.episodeSelection+"_"+this.state.serverSelection} iframeSrc={this.state.movieSrcs.length ? this.state.movieSrcs[0].src : ""}/> }
                  {this.state.loading.player ? (<img src="./loading.gif"/>) : null}
             <div className="card" style={{"textAlign": "left"}}>
