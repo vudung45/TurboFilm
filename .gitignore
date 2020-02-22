@@ -8,6 +8,10 @@
 # testing
 /coverage
 
+#production
+/build
+/dist_webserver
+
 # misc
 .DS_Store
 .env.local
