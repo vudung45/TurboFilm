@@ -51,10 +51,10 @@ class MoviePlayer extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        this.updatePlayer(nextProps.movieSrcs);
-        // requires switching from 
-        if(nextProps.movieSrcs && nextProps.movieSrcs.length > 0 && nextProps.movieSrcs[0].type == "iframe" && this.props.movieSrcs != "iframe")
-            return true;
+        // this.updatePlayer(nextProps.movieSrcs);
+        // // requires switching from 
+        // if(nextProps.movieSrcs && nextProps.movieSrcs.length > 0 && nextProps.movieSrcs[0].type == "iframe" && this.props.movieSrcs != "iframe")
+        //     return true;
         return false;
     }
 
@@ -280,8 +280,8 @@ export default class Movie extends React.Component {
         return (
         <div className="container">
             <h3>{this.state.movieInfo.title ? this.state.movieInfo.title : "Loading..."}</h3>
-             {this.state.movieSrcs.length > 0 && this.state.movieSrcs[0].type != "iframe" ? <MoviePlayer movieSrcs={this.state.movieSrcs}/> :
-                 <IFramePlayer iframeSrc={this.state.movieSrcs.length ? this.state.movieSrcs[0].src : ""}/> }
+             {this.state.movieSrcs.length > 0 && this.state.movieSrcs[0].type != "iframe" ? <MoviePlayer key={selection+"_"+this.state.episodeSelection+"_"+this.state.serverSelection} movieSrcs={this.state.movieSrcs}/> :
+                 <IFramePlayer  key={selection+"_"+this.state.episodeSelection+"_"+this.state.serverSelection} iframeSrc={this.state.movieSrcs.length ? this.state.movieSrcs[0].src : ""}/> }
                  {this.state.loading.player ? (<img src="./loading.gif"/>) : null}
             <div className="card" style={{"textAlign": "left"}}>
               <div className="card-header">
