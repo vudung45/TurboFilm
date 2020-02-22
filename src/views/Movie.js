@@ -75,7 +75,6 @@ class MoviePlayer extends React.Component {
                 plugins: {
                     videoJsResolutionSwitcher: {
                       ui: true,
-                      default: 'low', // Default resolution [{Number}, 'low', 'high'],
                       dynamicLabel: true // Display dynamic labels or gear symbol
                     }
                 }
