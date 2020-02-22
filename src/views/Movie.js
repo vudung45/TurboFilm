@@ -131,7 +131,7 @@ export default class Movie extends React.Component {
                     }
                 });
                 iframeSources.forEach(sources => {
-                    let processed = sources;
+                    let processed = processSources(sources);
                     if(processed.length > 0){
                         let serverName = "IFRAME#"+Object.keys(this.mediaCache[instanceId][ep]).length
                         this.mediaCache[instanceId][ep][serverName] = processed
