@@ -5,10 +5,11 @@ const serveStatic = require('serve-static');
 const movies = require("./routes/api/movie");
 var enforce = require('express-sslify');
 
+
+const app = express({ strict: true });
 // Use enforce.HTTPS({ trustProtoHeader: true }) since you're behind Heroku's reverse proxy
 app.use(enforce.HTTPS({ trustProtoHeader: true }));
 
-const app = express({ strict: true })
 app.enable('strict routing');
 
 app.use(serveStatic(path.join(__dirname,'../build')));
