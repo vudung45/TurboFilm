@@ -1,7 +1,6 @@
 import React from 'react';
 
 
-
 export default class IFramePlayer extends React.Component {
     constructor(props) {
         super(props)
