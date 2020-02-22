@@ -9,7 +9,7 @@ function processSources(sources) {
             return;
 
         let src = source["src"].replace(/^(http:)?\/\//, "https://");
-        let type = source["type"].includes("mp4") ? "video/mp4" : (source["type"].includes("hls") ? "application/x-mpegURL" : null);
+        let type = source["type"].includes("mp4") ? "video/mp4" : (source["type"].includes("hls") ? "application/x-mpegURL" : source["type"]);
         let label = source["label"] ? source["label"] : "MOV";
         if(src && type && label) {
             processSources.push({
