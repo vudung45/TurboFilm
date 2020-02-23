@@ -156,7 +156,9 @@ class Movie extends React.Component {
 
                 console.log(this.state);
                 this.setState({loading : {episodes: false}});
-                this.selectServer(instanceId, ep, Object.keys(this.mediaCache[instanceId][ep])[0]);
+                let serverSorted = Object.keys(servers).sort(function(a, b) { return getServerScore(a) - getServerScore(b)})
+
+                this.selectServer(instanceId, ep, serverSorted[0]);
                 this.setState({loading : {servers: false}});
             })
         }
