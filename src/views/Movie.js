@@ -191,8 +191,8 @@ class Movie extends React.Component {
             });
             if(this.mediaCache[selection] && this.mediaCache[selection][this.state.episodeSelection]) {
                 let servers = this.mediaCache[selection][this.state.episodeSelection];
-                let serverSelection = this.state.serverSelection ? this.state.serverSelection : Object.keys(this.mediaCache[selection][this.state.episodeSelection])[0];
                 let serverSorted = Object.keys(servers).sort(function(a, b) { return getServerScore(a) - getServerScore(b)})
+                let serverSelection = this.state.serverSelection ? this.state.serverSelection : serverSorted[0];
                 console.log(serverSorted);
                 serversNav = serverSorted.map(k => {
                     return (<li key={selection+"_"+this.state.episodeSelection+"_"+k} className="nav-item">
