@@ -6,7 +6,6 @@ import { withRouter, useParams } from "react-router-dom";
 function processSources(sources) {
     let processSources = []
     sources.forEach(source => {
-        console.log(source)
         if(!source["src"] || !source["type"])
             return;
 
@@ -122,7 +121,6 @@ class Movie extends React.Component {
                     return;
                 let directSources = jsonResp.response.sources.direct;
                 let mirrorSources = jsonResp.response.mirrors;
-                console.log(mirrorSources);
                 let iframeSources = jsonResp.response.sources.iframe;
                 if(!this.mediaCache[instanceId])
                     this.mediaCache[instanceId] = {}
@@ -147,7 +145,6 @@ class Movie extends React.Component {
                     mirrorSources[k].forEach( s => {
                         let processed = processSources(s);
                         if(processed.length > 0){
-                            console.log(processed);
                             let serverName = "MIRROR#"+Object.keys(this.mediaCache[instanceId][ep]).length
                             this.mediaCache[instanceId][ep][serverName] = processed
                         }
@@ -157,7 +154,6 @@ class Movie extends React.Component {
                 console.log(this.state);
                 this.setState({loading : {episodes: false}});
                 let serverSorted = Object.keys(this.mediaCache[instanceId][ep]).sort(function(a, b) { return getServerScore(a) - getServerScore(b)})
-
                 this.selectServer(instanceId, ep, serverSorted[0]);
                 this.setState({loading : {servers: false}});
             })
@@ -165,8 +161,10 @@ class Movie extends React.Component {
     }
 
     selectServer(instanceId, ep, serverName){
-        if(serverName in this.mediaCache[instanceId][ep])
+        if(serverName in this.mediaCache[instanceId][ep]){
+            console.log(this.mediaCache[instanceId][ep][serverName]);
             this.setState({serverSelection: serverName, movieSrcs : this.mediaCache[instanceId][ep][serverName]})
+        }
     }
 
     render() {
@@ -195,7 +193,6 @@ class Movie extends React.Component {
                 let servers = this.mediaCache[selection][this.state.episodeSelection];
                 let serverSorted = Object.keys(servers).sort(function(a, b) { return getServerScore(a) - getServerScore(b)})
                 let serverSelection = this.state.serverSelection ? this.state.serverSelection : serverSorted[0];
-                console.log(serverSorted);
                 serversNav = serverSorted.map(k => {
                     return (<li key={selection+"_"+this.state.episodeSelection+"_"+k} className="nav-item">
                         <button key={selection+"_"+this.state.episodeSelection+"_"+k} className={"nav-link " + (k == serverSelection ? "active" : "")}  
