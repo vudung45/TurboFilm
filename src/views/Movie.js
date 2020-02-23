@@ -213,19 +213,19 @@ class Movie extends React.Component {
               <div className="card-header">
                 <ul className="nav nav-pills card-header-pills">
                   {originsNav}
-                  {this.state.loading.origins ? (<img src="./loading.gif"/>) : null}
+                  {this.state.loading.origins ? (<img src="//loading.gif"/>) : null}
                 </ul>
               </div>
               <div className="card-body">
                 <ul className="nav nav-pills">
                   {episodesNav}
-                  {this.state.loading.episodes ? (<img src="./loading.gif"/>) : null}
+                  {this.state.loading.episodes ? (<img src="//loading.gif"/>) : null}
                 </ul>
                 <div className="card-body">
                     <h6>Servers</h6>
                     <ul className="nav nav-pills">
                       {serversNav}
-                      {this.state.loading.servers ? (<img src="./loading.gif"/>) : null}
+                      {this.state.loading.servers ? (<img src="//loading.gif"/>) : null}
                     </ul>
               </div>
               </div>
