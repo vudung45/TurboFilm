@@ -13,8 +13,7 @@ class MovieBox extends React.Component {
               <div class="card-body">
                 <h5 class="card-title">{this.props.title}</h5>  
                 <h6 class="card-title">{this.props.title_vietnamese}</h6>  
-                <Link to={{pathname: '/movie',
-                           movieId: this.props._id}} className="btn btn-primary">Watch</Link>
+                <Link to={{pathname: '/movie/'+this.props._id}} className="btn btn-primary">Watch</Link>
               </div>
               </div> );
     }

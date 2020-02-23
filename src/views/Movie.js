@@ -1,14 +1,18 @@
 import React from 'react';
 import JWMoviePlayer from "./players/jwmovieplayer.js";
 import IFramePlayer from "./players/iframe.js";
+import { withRouter, useParams } from "react-router-dom";
 
 function processSources(sources) {
     let processSources = []
     sources.forEach(source => {
+        console.log(source)
         if(!source["src"] || !source["type"])
             return;
 
-        let src = source["src"].replace(/^(http:)?\/\//, "https://");
+        let src = source["src"].replace(/^(http:)?\/\//, "//");
+        if(src.includes("youtube"))
+            src = "https:" + src;
         let type = source["type"].includes("mp4") ? "video/mp4" : (source["type"].includes("hls") ? "application/x-mpegURL" : source["type"]);
         let label = source["label"] ? source["label"] : "MOV";
         if(src && type && label) {
@@ -29,8 +33,22 @@ function getVideoServerName(src) {
 
 }
 
-export default class Movie extends React.Component {
+const SERVER_PREFERENCES = {
+    "SV" : 0,
+    "MIRROR": 1, 
+    "IFRAME": 2,
+}
 
+function getServerScore(svName){
+    for(const k of Object.keys(SERVER_PREFERENCES)) {
+        if(svName.includes(k))
+            return SERVER_PREFERENCES[k];
+    }
+
+    return 100;
+}
+
+class Movie extends React.Component {
     constructor(props) {
         super(props);
         this.state = {movieId: null, 
@@ -55,12 +73,7 @@ export default class Movie extends React.Component {
     }
 
     componentDidMount() {
-        console.log("here")
-        let movieId = null;
-        if(this.props.location)
-            movieId = this.props.location.movieId
-        else
-            return
+        let movieId =  this.props.match.params.id;
         this.setState({"movieId": movieId});
         this.setState({loading : {origins: true, episodes:true}});
         fetch("/api/movie/info?movieId="+movieId)
@@ -88,6 +101,7 @@ export default class Movie extends React.Component {
         if(!(instanceId in this.state.instances))
             return;
 
+        //update originSelection state, and remove current movieSrcs
         this.setState({selection: instanceId, movieSrcs: []})
         this.selectEpisode(instanceId, this.state.episodeSelection);
     }
@@ -108,35 +122,38 @@ export default class Movie extends React.Component {
                     return;
                 let directSources = jsonResp.response.sources.direct;
                 let mirrorSources = jsonResp.response.mirrors;
+                console.log(mirrorSources);
                 let iframeSources = jsonResp.response.sources.iframe;
                 if(!this.mediaCache[instanceId])
                     this.mediaCache[instanceId] = {}
                 if(!this.mediaCache[instanceId][ep])
                     this.mediaCache[instanceId][ep] = {}
 
-                directSources.forEach(sources => {
-                    let processed = processSources(sources)
-                    console.log(sources)
-                    if(processed.length > 0){
-                        let serverName = "SV#"+Object.keys(this.mediaCache[instanceId][ep]).length
-                        this.mediaCache[instanceId][ep][serverName] = processed
-                    }
-                });
+                Object.keys(jsonResp.response.sources).forEach(k => {
+                    let sources =  jsonResp.response.sources[k];
+                    let serverPrefix = k != "iframe" ? "SV" : "IFRAME";
+
+                    sources.forEach(s => {
+                        let processed = processSources(s);
+                        if(s.length > 0){
+                            let serverName = serverPrefix+"#"+Object.keys(this.mediaCache[instanceId][ep]).length
+                            this.mediaCache[instanceId][ep][serverName] = processed
+                        }
+                    })
+
+                })
 
                 Object.keys(mirrorSources).forEach(k => {
-                    let processed = processSources(mirrorSources[k]);
-                    if(processed.length > 0){
-                        let serverName = "Mirror#"+Object.keys(this.mediaCache[instanceId][ep]).length
-                        this.mediaCache[instanceId][ep][serverName] = processed
-                    }
+                    mirrorSources[k].forEach( s => {
+                        let processed = processSources(s);
+                        if(processed.length > 0){
+                            console.log(processed);
+                            let serverName = "MIRROR#"+Object.keys(this.mediaCache[instanceId][ep]).length
+                            this.mediaCache[instanceId][ep][serverName] = processed
+                        }
+                    })
                 });
-                iframeSources.forEach(sources => {
-                    let processed = processSources(sources);
-                    if(processed.length > 0){
-                        let serverName = "IFRAME#"+Object.keys(this.mediaCache[instanceId][ep]).length
-                        this.mediaCache[instanceId][ep][serverName] = processed
-                    }
-                });
+
                 console.log(this.state);
                 this.setState({loading : {episodes: false}});
                 this.selectServer(instanceId, ep, Object.keys(this.mediaCache[instanceId][ep])[0]);
@@ -172,11 +189,12 @@ export default class Movie extends React.Component {
                             onClick={this.selectEpisode.bind(this, selection, i)}>{ep}</button>
                 </li>)
             });
-            console.log(this.mediaCache[selection])
             if(this.mediaCache[selection] && this.mediaCache[selection][this.state.episodeSelection]) {
                 let servers = this.mediaCache[selection][this.state.episodeSelection];
                 let serverSelection = this.state.serverSelection ? this.state.serverSelection : Object.keys(this.mediaCache[selection][this.state.episodeSelection])[0];
-                serversNav = Object.keys(servers).map(k => {
+                let serverSorted = Object.keys(servers).sort(function(a, b) { return getServerScore(a) - getServerScore(b)})
+                console.log(serverSorted);
+                serversNav = serverSorted.map(k => {
                     return (<li key={selection+"_"+this.state.episodeSelection+"_"+k} className="nav-item">
                         <button key={selection+"_"+this.state.episodeSelection+"_"+k} className={"nav-link " + (k == serverSelection ? "active" : "")}  
                                 onClick={this.selectServer.bind(this, selection, this.state.episodeSelection, k)}>{k}</button>
@@ -217,3 +235,5 @@ export default class Movie extends React.Component {
         );
     }
 }
+
+export default withRouter(Movie);

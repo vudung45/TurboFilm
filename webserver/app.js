@@ -7,8 +7,9 @@ var enforce = require('express-sslify');
 
 
 const app = express({ strict: true });
-// Use enforce.HTTPS({ trustProtoHeader: true }) since you're behind Heroku's reverse proxy
-app.use(enforce.HTTPS({ trustProtoHeader: true }));
+
+// // Use enforce.HTTPS({ trustProtoHeader: true }) since you're behind Heroku's reverse proxy
+// app.use(enforce.HTTPS({ trustProtoHeader: true }));
 
 app.enable('strict routing');
 
