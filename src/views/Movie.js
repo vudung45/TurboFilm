@@ -99,7 +99,7 @@ class Movie extends React.Component {
             return;
 
         //update originSelection state, and remove current movieSrcs
-        this.setState({selection: instanceId, movieSrcs: []})
+        this.setState({selection: instanceId, "serverSelection": null, movieSrcs: []})
         this.selectEpisode(instanceId, this.state.episodeSelection);
     }
 
@@ -171,13 +171,11 @@ class Movie extends React.Component {
         let serversNav = []
         if(Object.keys(this.state.instances).length > 0)
         {
-            let origins = Object.keys(this.state.instances).map(k => [this.state.instances[k].origin, k]).sort();
             let selection = this.state.selection ? this.state.selection : Object.keys(this.state.instances).sort()[0];
-            let selectionName = this.state.instances[selection].origin;
-            originsNav = origins.map(origin => {
-                return (<li key={origin[1]} className="nav-item">
-                        <button key={origin[1]} className={"nav-link " + (selectionName == origin[0] ? "active" : "")} 
-                         onClick={this.selectOrigin.bind(this, origin[1])}>{origin[0]}</button>
+            originsNav = Object.keys(this.state.instances).map(key => {
+                return (<li key={key} className="nav-item">
+                        <button key={key} className={"nav-link " + (key == selection ? "active" : "")} 
+                         onClick={this.selectOrigin.bind(this, key)}>{this.state.instances[key].origin}</button>
                       </li>)
             });
             let episodes = this.state.instances[selection].episodes;
