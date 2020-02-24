@@ -173,7 +173,7 @@ router.get("/getEpisodeMedia", async (req, res) => {
     let apiOpts = "instanceId="+instanceId;
     try {
         let apiResp = await request({
-            "uri": CONFIG.MOVIE_DIRECTORY_API+`/episodes?${apiOpts}&force=1`,
+            "uri": CONFIG.MOVIE_DIRECTORY_API+`/episodes?${apiOpts}`,
             "method": "GET",
             "header": {
                 "Content-Type": "application/json"

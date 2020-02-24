@@ -9,7 +9,7 @@ function processSources(sources) {
         if(!source["src"] || !source["type"])
             return;
 
-        let src = source["src"].replace(/^(http:)?\/\//, "//");
+        let src = source["src"].replace(/^(https?:)?\/\//, "//");
         if(src.includes("youtube"))
             src = "https:" + src;
         let type = source["type"].includes("mp4") ? "video/mp4" : (source["type"].includes("hls") ? "application/x-mpegURL" : source["type"]);
