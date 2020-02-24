@@ -107,7 +107,7 @@ class Movie extends React.Component {
         if(!(instanceId in this.state.instances))
             return;
         this.setState({loading : {servers: true}});
-        this.setState({"episodeSelection": parseInt(ep), "selection": instanceId, movieSrcs: []});
+        this.setState({"episodeSelection": parseInt(ep), "selection": instanceId, "serverSelection": null, movieSrcs: []});
         if(this.mediaCache[instanceId] && this.mediaCache[instanceId][ep]) {
             this.setState({loading : {servers: false}});
             this.selectServer(instanceId, ep, Object.keys(this.mediaCache[instanceId][ep])[0])
