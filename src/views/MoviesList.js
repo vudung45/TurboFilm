@@ -7,7 +7,6 @@ class MovieBox extends React.Component {
 
 
     render(){
-        console.log(this.props)
         return (<div class="card mb-4" style={{"width" : "18rem"}}>
               <img class="card-img-top" src={this.props.image} alt="Card image cap"/>
               <div class="card-body">

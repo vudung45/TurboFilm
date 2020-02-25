@@ -8,13 +8,13 @@ export default class Search extends React.Component {
         this.handleChange = this.handleChange.bind(this);
         this.processTextDelay = null;
         this.processText = this.processText.bind(this)
-        this.state = {movies : {}}
+        this.state = {movies : {}};
     }
 
     handleChange(event) {
-        clearTimeout(this.processTextDelay)
-        let value = event.target.value
-        this.processTextDelay = setTimeout(() => {this.processText(value)}, 500)
+        clearTimeout(this.processTextDelay);
+        let value = event.target.value;
+        this.processTextDelay = setTimeout(() => {this.processText(value)}, 500);
     }  
 
     processText(txt) { 
@@ -26,9 +26,10 @@ export default class Search extends React.Component {
             if(!jsonResp.status)
                 return;
 
-            let movies = []
-            this.setState({"movies": jsonResp.response})
-        }).catch(e => console.log(e))
+            console.log(jsonResp);
+            let movies = [];
+            this.setState({"movies": jsonResp.response});
+        }).catch(e => console.log(e));
     }
 
 

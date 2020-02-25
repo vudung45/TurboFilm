@@ -92,13 +92,17 @@ class Movie extends React.Component {
                 this.setState({selection: Object.keys(movieInstances).sort()[0], loading : {origins: false, episodes:false}})
                 this.selectOrigin(Object.keys(movieInstances).sort()[0]);
             }
-        }).catch(e => console.log(e))
+        }).catch(e => {
+            this.setState({loading : {origins: false, episodes:false}});
+            console.log(e)
+        })
     }
 
     selectOrigin(instanceId) {
         if(!(instanceId in this.instances))
             return;
 
+        console.log(this.instances[instanceId]);
         let currentEpisode = this.state.episodeSelection ? this.state.episodeSelection : null;
         this.setState({selection: instanceId, "serverSelection": null, movieSrcs: []})
         if(!currentEpisode)
@@ -114,8 +118,9 @@ class Movie extends React.Component {
     }
 
     selectEpisode(instanceId, ep) {
-        if(!(instanceId in this.instances))
+        if(!(instanceId in this.instances) || !(this.instances[instanceId].episodes.length > ep))
             return;
+        console.log(this.instances[instanceId].episodes[ep]);
         this.setState({loading : {servers: true}});
         this.setState({"episodeSelection": parseInt(ep), "selection": instanceId, "serverSelection": null, movieSrcs: []});
         if(this.mediaCache[instanceId] && this.mediaCache[instanceId][ep]) {
@@ -159,13 +164,12 @@ class Movie extends React.Component {
                     })
                 });
 
-                console.log(this.state);
-                this.setState({loading : {episodes: false}});
                 let serverSorted = Object.keys(this.mediaCache[instanceId][ep]).sort(function(a, b) { return getServerScore(a) - getServerScore(b)})
                 this.selectServer(instanceId, ep, serverSorted[0]);
                 this.setState({loading : {servers: false}});
             }).catch(e => {
                 console.log(e);
+                this.setState({loading : {servers: false}});
                 this.setState({selection: instanceId, "episodeSelection": null, "serverSelection": null, movieSrcs: []})
             })
         }
