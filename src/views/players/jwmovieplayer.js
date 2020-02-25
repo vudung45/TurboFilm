@@ -24,7 +24,7 @@ export default class JWMoviePlayer extends React.Component {
             this.player = window.jwplayer(this.videoNode);
 
         this.player.setup({
-            playlist:[
+            playlist:[{
                 sources: newSrcs.map(m => { return {
                             file: m["src"],
                             label: m["label"],
@@ -34,9 +34,9 @@ export default class JWMoviePlayer extends React.Component {
                 aspectratio: "16:9", 
                 primary: "html5", 
                 autostart: true, 
-                allowscriptaccess: "always"}
-            ]);
-    }
+                allowscriptaccess: "always"
+            }]});   
+    }   
 
 
 
