@@ -105,12 +105,13 @@ class Movie extends React.Component {
         console.log(this.instances[instanceId]);
         let currentEpisode = this.state.episodeSelection != null ? this.state.episodeSelection : null;
         this.setState({selection: instanceId, "serverSelection": null, movieSrcs: []})
-        if(!currentEpisode)
-            return;
-
-        let correspondingEpisode = this.instances[instanceId].episodes.length > currentEpisode ? 
+        let correspondingEpisode =null;
+        if(currentEpisode != null)
+            correspondingEpisode = this.instances[instanceId].episodes.length > currentEpisode ? 
                                                 currentEpisode : (this.instances[instanceId].episodes.length > 0 ? this.instances[instanceId].episodes.length - 1 : null);
-
+        else
+            correspondingEpisode = this.instances[instanceId].episodes.length > 0 ? 0 : null;
+        
         if(!correspondingEpisode)
             return;
         //update originSelection state, and remove current movieSrcs
