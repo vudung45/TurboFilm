@@ -111,8 +111,8 @@ class Movie extends React.Component {
                                                 currentEpisode : (this.instances[instanceId].episodes.length > 0 ? this.instances[instanceId].episodes.length - 1 : null);
         else
             correspondingEpisode = this.instances[instanceId].episodes.length > 0 ? 0 : null;
-        
-        if(!correspondingEpisode)
+
+        if(correspondingEpisode == null)
             return;
         //update originSelection state, and remove current movieSrcs
         this.selectEpisode(instanceId, correspondingEpisode);
