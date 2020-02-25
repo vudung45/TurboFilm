@@ -105,14 +105,14 @@ class Movie extends React.Component {
         console.log(this.instances[instanceId]);
         let currentEpisode = this.state.episodeSelection != null ? this.state.episodeSelection : null;
         this.setState({selection: instanceId, "serverSelection": null, movieSrcs: []})
-        let correspondingEpisode =null;
-        if(currentEpisode != null)
+        let correspondingEpisode = null;
+        if(currentEpisode !== null)
             correspondingEpisode = this.instances[instanceId].episodes.length > currentEpisode ? 
                                                 currentEpisode : (this.instances[instanceId].episodes.length > 0 ? this.instances[instanceId].episodes.length - 1 : null);
         else
             correspondingEpisode = this.instances[instanceId].episodes.length > 0 ? 0 : null;
 
-        if(correspondingEpisode == null)
+        if(correspondingEpisode === null)
             return;
         //update originSelection state, and remove current movieSrcs
         this.selectEpisode(instanceId, correspondingEpisode);
@@ -199,7 +199,7 @@ class Movie extends React.Component {
             let episodes = this.instances[selection].episodes;
             episodesNav = episodes.map((ep,i) => {
                 return (<li key={selection+"_"+i} className="nav-item">
-                    <button key={selection+"_"+i} className={"nav-link " + (i == this.state.episodeSelection ? "active" : "")}  
+                    <button key={selection+"_"+i} className={"nav-link " + (i === this.state.episodeSelection ? "active" : "")}  
                             onClick={this.selectEpisode.bind(this, selection, i)}>{ep}</button>
                 </li>)
             });
@@ -209,7 +209,7 @@ class Movie extends React.Component {
                 let serverSelection = this.state.serverSelection ? this.state.serverSelection : serverSorted[0];
                 serversNav = serverSorted.map(k => {
                     return (<li key={selection+"_"+this.state.episodeSelection+"_"+k} className="nav-item">
-                        <button key={selection+"_"+this.state.episodeSelection+"_"+k} className={"nav-link " + (k == serverSelection ? "active" : "")}  
+                        <button key={selection+"_"+this.state.episodeSelection+"_"+k} className={"nav-link " + (k === serverSelection ? "active" : "")}  
                                 onClick={this.selectServer.bind(this, selection, this.state.episodeSelection, k)}>{k}</button>
                     </li>)
                 })
@@ -219,7 +219,7 @@ class Movie extends React.Component {
         return (
         <div className="container">
             <h3>{this.state.movieInfo.title ? this.state.movieInfo.title : "Loading..."}</h3>
-             {this.state.movieSrcs.length == 0 ? null : 
+             {this.state.movieSrcs.length === 0 ? null : 
                            ( this.state.movieSrcs[0].type != "iframe" ? 
                                     <JWMoviePlayer key={this.state.selection+"_"+this.state.episodeSelection+"_"+this.state.serverSelection} movieSrcs={this.state.movieSrcs}/> :
                                     <IFramePlayer  key={this.state.selection+"_"+this.state.episodeSelection+"_"+this.state.serverSelection} iframeSrc={this.state.movieSrcs.length ? this.state.movieSrcs[0].src : ""}/>) }
