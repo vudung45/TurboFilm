@@ -99,10 +99,17 @@ class Movie extends React.Component {
         if(!(instanceId in this.instances))
             return;
 
-        let currentEpisode = this.state.episodeSelection ? this.state.episodeSelection : 0;
-        let correspondingEpisode = this.instances[instanceId].episodes.length > currentEpisode ? currentEpisode : this.instances[instanceId].episodes.length-1;
-        //update originSelection state, and remove current movieSrcs
+        let currentEpisode = this.state.episodeSelection ? this.state.episodeSelection : null;
         this.setState({selection: instanceId, "serverSelection": null, movieSrcs: []})
+        if(!currentEpisode)
+            return;
+
+        let correspondingEpisode = this.instances[instanceId].episodes.length > currentEpisode ? 
+                                                currentEpisode : (this.instances[instanceId].episodes.length > 0 ? this.instances[instanceId].episodes.length - 1 : null);
+
+        if(!correspondingEpisode)
+            return;
+        //update originSelection state, and remove current movieSrcs
         this.selectEpisode(instanceId, correspondingEpisode);
     }
 
@@ -159,7 +166,7 @@ class Movie extends React.Component {
                 this.setState({loading : {servers: false}});
             }).catch(e => {
                 console.log(e);
-                this.setState({selection: instanceId, "episodeSelection":0, "serverSelection": null, movieSrcs: []})
+                this.setState({selection: instanceId, "episodeSelection": null, "serverSelection": null, movieSrcs: []})
             })
         }
     }
