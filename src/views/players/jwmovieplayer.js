@@ -30,12 +30,13 @@ export default class JWMoviePlayer extends React.Component {
                             label: m["label"],
                             type: m["type"]
                         }}),
-                width: "100%", 
-                aspectratio: "16:9", 
-                primary: "html5", 
-                autostart: true, 
-                allowscriptaccess: "always"
-            }]});   
+            }],
+            width: "100%", 
+            aspectratio: "16:9", 
+            primary: "html5", 
+            autostart: true, 
+            allowscriptaccess: "always"
+        });   
     }   
 
 
