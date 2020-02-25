@@ -24,12 +24,18 @@ export default class JWMoviePlayer extends React.Component {
             this.player = window.jwplayer(this.videoNode);
 
         this.player.setup({
-            sources: newSrcs.map(m => { return {
-                file: m["src"],
-                label: m["label"],
-                type: m["type"]
-            }})
-            ,width: "100%", aspectratio: "16:9", primary: "html5", autostart: true, allowscriptaccess: "always"});
+            playlist:[
+                sources: newSrcs.map(m => { return {
+                            file: m["src"],
+                            label: m["label"],
+                            type: m["type"]
+                        }}),
+                width: "100%", 
+                aspectratio: "16:9", 
+                primary: "html5", 
+                autostart: true, 
+                allowscriptaccess: "always"}
+            ]);
     }
 
 

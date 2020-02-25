@@ -9,7 +9,7 @@ export default class IFramePlayer extends React.Component {
     render() {
         return (
             <div>
-            <iframe src={this.props.iframeSrc} scrolling="no" frameBorder="0" width="100%" height="100%" allowFullScreen={true}></iframe>
+            <iframe src={this.props.iframeSrc} scrolling="no" frameBorder="0" width="100%" minHeight="400px" allowFullScreen={true}></iframe>
             </div>
         );
     }

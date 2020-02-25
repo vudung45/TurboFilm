@@ -49,8 +49,7 @@ class Movie extends React.Component {
     constructor(props) {
         super(props);
         this.state = {movieId: null, 
-                      movieInfo: {}, 
-                      instances: {}, 
+                      movieInfo: {},
                       selection: null, 
                       episodeSelection: 0, 
                       mediaCache: {}, 
@@ -66,6 +65,7 @@ class Movie extends React.Component {
         this.selectOrigin = this.selectOrigin.bind(this)
         this.selectServer = this.selectServer.bind(this)
         this.mediaCache = {}
+        this.instances = {}
 
     }
 
@@ -95,16 +95,18 @@ class Movie extends React.Component {
     }
 
     selectOrigin(instanceId) {
-        if(!(instanceId in this.state.instances))
+        if(!(instanceId in this.instances))
             return;
 
+        let currentEpisode = this.state.episodeSelection ? this.state.episodeSelection : 0;
+        let correspondingEpisode = this.instances[instanceId].length > currentEpisode ? currentEpisode : this.instances[instanceId].length-1;
         //update originSelection state, and remove current movieSrcs
         this.setState({selection: instanceId, "serverSelection": null, movieSrcs: []})
-        this.selectEpisode(instanceId, this.state.episodeSelection);
+        this.selectEpisode(instanceId, correspondingEpisodes);
     }
 
     selectEpisode(instanceId, ep) {
-        if(!(instanceId in this.state.instances))
+        if(!(instanceId in this.instances))
             return;
         this.setState({loading : {servers: true}});
         this.setState({"episodeSelection": parseInt(ep), "selection": instanceId, "serverSelection": null, movieSrcs: []});
@@ -154,6 +156,9 @@ class Movie extends React.Component {
                 let serverSorted = Object.keys(this.mediaCache[instanceId][ep]).sort(function(a, b) { return getServerScore(a) - getServerScore(b)})
                 this.selectServer(instanceId, ep, serverSorted[0]);
                 this.setState({loading : {servers: false}});
+            }).catch(e => {
+                console.log(e);
+                this.setState({selection: instanceId, "episodeSelection":0, "serverSelection": null, movieSrcs: []})
             })
         }
     }
@@ -169,16 +174,16 @@ class Movie extends React.Component {
         let originsNav = []
         let episodesNav = []
         let serversNav = []
-        if(Object.keys(this.state.instances).length > 0)
+        if(Object.keys(this.instances).length > 0)
         {
-            let selection = this.state.selection ? this.state.selection : Object.keys(this.state.instances).sort()[0];
-            originsNav = Object.keys(this.state.instances).map(key => {
+            let selection = this.state.selection ? this.state.selection : Object.keys(this.instances).sort()[0];
+            originsNav = Object.keys(this.instances).map(key => {
                 return (<li key={key} className="nav-item">
                         <button key={key} className={"nav-link " + (key == selection ? "active" : "")} 
-                         onClick={this.selectOrigin.bind(this, key)}>{this.state.instances[key].origin}</button>
+                         onClick={this.selectOrigin.bind(this, key)}>{this.instances[key].origin}</button>
                       </li>)
             });
-            let episodes = this.state.instances[selection].episodes;
+            let episodes = this.instances[selection].episodes;
             episodesNav = episodes.map((ep,i) => {
                 return (<li key={selection+"_"+i} className="nav-item">
                     <button key={selection+"_"+i} className={"nav-link " + (i == this.state.episodeSelection ? "active" : "")}  
