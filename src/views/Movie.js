@@ -88,7 +88,8 @@ class Movie extends React.Component {
                 return;
             let movieInstances = jsonResp.response
             if(Object.keys(movieInstances).length > 0) {
-                this.setState({selection: Object.keys(movieInstances).sort()[0], instances: movieInstances, loading : {origins: false, episodes:false}})
+                this.instances = movieInstances;
+                this.setState({selection: Object.keys(movieInstances).sort()[0], loading : {origins: false, episodes:false}})
                 this.selectOrigin(Object.keys(movieInstances).sort()[0]);
             }
         }).catch(e => console.log(e))
