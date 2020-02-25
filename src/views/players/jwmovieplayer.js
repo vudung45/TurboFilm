@@ -37,6 +37,10 @@ export default class JWMoviePlayer extends React.Component {
             autostart: true, 
             allowscriptaccess: "always"
         });   
+        this.player.on("error", (code, message, sourceErrro, type) => {
+            console.log("Failed to load a playlist item, try to play the next one");
+            this.player.next();
+        })
     }   
 
 
