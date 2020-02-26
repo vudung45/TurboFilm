@@ -1,4 +1,3 @@
-import videojs from 'video.js';
 import React from 'react';
 
 export default class MoviePlayer extends React.Component {
@@ -18,12 +17,17 @@ export default class MoviePlayer extends React.Component {
     }
 
     updatePlayer(newSrcs) {
-        console.log(newSrcs)
+        let videojs = window.videojs;
+        
+        if(!videojs)
+            return;
+
         if(newSrcs == null)
             return;
 
         if(this.player)
             this.player.src({})
+
 
 
         if(!this.player)
