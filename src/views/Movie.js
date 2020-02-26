@@ -224,7 +224,7 @@ class Movie extends React.Component {
         <div className="container">
             <h3>{this.state.movieInfo.title ? this.state.movieInfo.title : "Loading..."}</h3>
              {this.state.movieSrcs.length === 0 ? null : 
-                           ( this.state.movieSrcs[0].type != "iframe" ? 
+                           ( this.state.movieSrcs[0].type !== "iframe" ? 
                                     <JWMoviePlayer key={this.state.selection+"_"+this.state.episodeSelection+"_"+this.state.serverSelection} movieSrcs={this.state.movieSrcs}/> :
                                     <IFramePlayer  key={this.state.selection+"_"+this.state.episodeSelection+"_"+this.state.serverSelection} iframeSrc={this.state.movieSrcs.length ? this.state.movieSrcs[0].src : ""}/>) }
                  {this.state.loading.player ? (<img src="./loading.gif"/>) : null}
