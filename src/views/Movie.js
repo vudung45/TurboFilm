@@ -91,7 +91,7 @@ class Movie extends React.Component {
                 this.instances = movieInstances;
                 let origins = Object.keys(movieInstances).sort((a,b) => {
                     return (this.instances[a].episodes.length - this.instances[b].episodes.length) ?  
-                                (this.instances[a].episodes.length - this.instances[b].episodes.length) : a < b;
+                                (this.instances[b].episodes.length -this.instances[a].episodes.length) : a > b;
                 })
                 this.setState({selection: origins[0], loading : {origins: false, episodes:false}})
                 this.selectOrigin(Object.keys(movieInstances).sort()[0]);
