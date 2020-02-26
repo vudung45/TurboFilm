@@ -10,8 +10,8 @@ module.exports = function(){
 
         default: // prod
             return {
-                MOVIE_DIRECTORY_API: process.env.MOVIE_DIRECTORY_API,
-                MEDIA_EXTRACTOR_API: process.env.MEDIA_EXTRACTOR_API
+                MOVIE_DIRECTORY_API: process.env.MOVIE_DIRECTORY_API ? process.env.MOVIE_DIRECTORY_API : "https://moviescraper123.herokuapp.com",
+                MEDIA_EXTRACTOR_API: process.env.MEDIA_EXTRACTOR_API ? process.env.MEDIA_EXTRACTOR_API : "https://mediaextractor.herokuapp.com"
             };
     }
 }();
