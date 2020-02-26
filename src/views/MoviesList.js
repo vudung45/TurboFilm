@@ -7,7 +7,7 @@ class MovieBox extends React.Component {
 
 
     render(){
-        let googleImageProxy = "https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&resize_w=250&resize_heihgt=350&url="+encodeURIComponent(this.props.image);
+        let googleImageProxy = "https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&resize_w=270&resize_height=400&url="+encodeURIComponent(this.props.image);
         return (<div class="card mb-4" style={{"width" : "18rem"}}>
               <img class="card-img-top" src={googleImageProxy} alt="Card image cap"/>
               <div class="card-body">

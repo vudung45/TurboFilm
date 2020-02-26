@@ -45,34 +45,63 @@ function getServerScore(svName){
     return 100;
 }
 
+function generateHistoryLink(movieId, origin, episode) {
+    let path = [movieId, origin, episode];
+    let url = "/movie"
+    for(const subPath of path) {
+        if(subPath == null)
+            return url;
+        url += "/"+subPath
+    }
+    return url;
+}
+
 class Movie extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {movieId: null, 
+        this.state = {
                       movieInfo: {},
                       selection: null, 
                       episodeSelection: 0, 
                       mediaCache: {}, 
-                      serverSelection: null,
+                      selections: {
+                        origin: null,
+                        episodeSelection: 0,
+                        serverSelection: null
+                      },
                       movieSrcs: [],
                       loading: {
                         "origins": false,
                         "episodes": false,
                         "servers": false,
                         "player": false
-                      }}
+                        }
+                    }
         this.selectEpisode = this.selectEpisode.bind(this)
         this.selectOrigin = this.selectOrigin.bind(this)
         this.selectServer = this.selectServer.bind(this)
         this.mediaCache = {}
         this.instances = {}
+        this.selections = {
+              origin: null, 
+              episodeSelection: 0, 
+              origin: null
+        }
 
     }
 
     componentDidMount() {
         let movieId =  this.props.match.params.id;
-        this.setState({"movieId": movieId});
+        const params = new URLSearchParams(this.props.location.search); 
+        this.selections = {
+                origin: this.props.match.params.origin, 
+                episodeSelection: parseInt(this.props.match.params.episode),
+                serverSelection: this.props.match.params.server
+        }
+
         this.setState({loading : {origins: true, episodes:true}});
+
+
         fetch("/api/movie/info?movieId="+movieId)
         .then(r => r.json())
         .then(jsonResp => {
@@ -89,12 +118,15 @@ class Movie extends React.Component {
             let movieInstances = jsonResp.response
             if(Object.keys(movieInstances).length > 0) {
                 this.instances = movieInstances;
-                let origins = Object.keys(movieInstances).sort((a,b) => {
-                    return (this.instances[a].episodes.length - this.instances[b].episodes.length) ?  
-                                (this.instances[b].episodes.length - this.instances[a].episodes.length) : a > b;
-                })
-                this.setState({selection: origins[0], loading : {origins: false, episodes:false}})
-                this.selectOrigin(origins[0]);
+                if(!(this.selections.origin in this.instances)) {
+                    let origins = Object.keys(movieInstances).sort((a,b) => {
+                        return (this.instances[a].episodes.length - this.instances[b].episodes.length) ?  
+                                    (this.instances[b].episodes.length - this.instances[a].episodes.length) : a > b;
+                    })
+                    this.selections.origin = origins[0];
+                } 
+                this.setState({loading : {origins: false, episodes:false}})
+                this.selectOrigin(this.selections.origin);
             }
         }).catch(e => {
             this.setState({loading : {origins: false, episodes:false}});
@@ -106,9 +138,9 @@ class Movie extends React.Component {
         if(!(instanceId in this.instances))
             return;
 
-        console.log(this.instances[instanceId]);
-        let currentEpisode = this.state.episodeSelection != null ? this.state.episodeSelection : null;
-        this.setState({selection: instanceId, "serverSelection": null, movieSrcs: []})
+        this.selections.origin = instanceId;
+        let currentEpisode = this.selections.episodeSelection != null ? this.selections.episodeSelection : null;
+        this.setState({selections: {origin: this.selections.origin}, movieSrcs: []})
         let correspondingEpisode = null;
         if(currentEpisode !== null)
             correspondingEpisode = this.instances[instanceId].episodes.length > currentEpisode ? 
@@ -125,27 +157,34 @@ class Movie extends React.Component {
     selectEpisode(instanceId, ep) {
         if(!(instanceId in this.instances) || !(this.instances[instanceId].episodes.length > ep))
             return;
-        console.log(this.instances[instanceId].episodes[ep]);
-        this.setState({loading : {servers: true}});
-        this.setState({"episodeSelection": parseInt(ep), "selection": instanceId, "serverSelection": null, movieSrcs: []});
+        
+        this.selections = {
+            ...this.selections,
+            origin: instanceId, 
+            episodeSelection: ep
+        }
+        this.setState({loading : {servers: true, player: true}});
+        this.setState({selections: { episodeSelection : ep,  origin: instanceId}, movieSrcs: []});
         if(this.mediaCache[instanceId] && this.mediaCache[instanceId][ep]) {
-            this.setState({loading : {servers: false}});
-            this.selectServer(instanceId, ep, Object.keys(this.mediaCache[instanceId][ep])[0])
+            this.setState({loading : {servers: false, player: false}});
+            if(!(this.selections.serverSelection in this.mediaCache[instanceId][ep])){
+                this.selections.serverSelection = Object.keys(this.mediaCache[instanceId][ep]).sort(function(a, b) { return getServerScore(a) - getServerScore(b)})[0]
+            }
+            this.selectServer(instanceId, ep, this.selections.serverSelection)
         } else {
             fetch(`/api/movie/getEpisodeMedia?instanceId=${instanceId}&ep=${ep}`)
             .then(r => r.json())
             .then(jsonResp => {
                 if(!jsonResp.status)
                     return;
-                let directSources = jsonResp.response.sources.direct;
-                let mirrorSources = jsonResp.response.mirrors;
-                let iframeSources = jsonResp.response.sources.iframe;
+                let sources = jsonResp.response.sources; // sources extracted from the site
+                let mirrorSources = jsonResp.response.mirrors; // pre-processed, perma links
                 if(!this.mediaCache[instanceId])
                     this.mediaCache[instanceId] = {}
                 if(!this.mediaCache[instanceId][ep])
                     this.mediaCache[instanceId][ep] = {}
 
-                Object.keys(jsonResp.response.sources).forEach(k => {
+                Object.keys(sources).forEach(k => {
                     let sources =  jsonResp.response.sources[k];
                     let serverPrefix = k != "iframe" ? "SV" : "IFRAME";
 
@@ -168,22 +207,37 @@ class Movie extends React.Component {
                         }
                     })
                 });
-
-                let serverSorted = Object.keys(this.mediaCache[instanceId][ep]).sort(function(a, b) { return getServerScore(a) - getServerScore(b)})
-                this.selectServer(instanceId, ep, serverSorted[0]);
-                this.setState({loading : {servers: false}});
+                console.log(this.selections.serverSelection);
+                if(!(this.selections.serverSelection in this.mediaCache[instanceId][ep]))
+                    this.selections.serverSelection = Object.keys(this.mediaCache[instanceId][ep]).sort(function(a, b) { return getServerScore(a) - getServerScore(b)})[0]
+                
+                this.selectServer(instanceId, ep, this.selections.serverSelection);
+                this.setState({loading : {servers: false, player: false}});
             }).catch(e => {
                 console.log(e);
-                this.setState({loading : {servers: false}});
-                this.setState({selection: instanceId, "episodeSelection": null, "serverSelection": null, movieSrcs: []})
+                this.setState({loading : {servers: false, player: false}});
             })
         }
     }
 
+    componentDidUpdate(prevProps) {
+        if(this.state.movieInfo){
+            window.history.replaceState({}, this.state.movieInfo["title"], 
+                generateHistoryLink(this.state.movieInfo["_id"], this.state.selections.origin, this.state.selections.episodeSelection));
+        }
+    }
+
     selectServer(instanceId, ep, serverName){
+        this.selections = {
+            ...this.selections,
+            origin: instanceId, 
+            episodeSelection: ep,
+            serverSelection: serverName
+        }
         if(serverName in this.mediaCache[instanceId][ep]){
             console.log(this.mediaCache[instanceId][ep][serverName]);
-            this.setState({serverSelection: serverName, movieSrcs : this.mediaCache[instanceId][ep][serverName]})
+            this.setState({selections: { episodeSelection : ep,  origin: instanceId, serverSelection: serverName}, 
+                           movieSrcs : this.mediaCache[instanceId][ep][serverName]})
         }
     }
 
@@ -193,28 +247,28 @@ class Movie extends React.Component {
         let serversNav = []
         if(Object.keys(this.instances).length > 0)
         {
-            let selection = this.state.selection ? this.state.selection : Object.keys(this.instances).sort()[0];
             originsNav = Object.keys(this.instances).map(key => {
                 return (<li key={key} className="nav-item">
-                        <button key={key} className={"nav-link " + (key == selection ? "active" : "")} 
+                        <button key={key} className={"nav-link " + (key == this.state.selections.origin ? "active" : "")} 
                          onClick={this.selectOrigin.bind(this, key)}>{this.instances[key].origin}</button>
                       </li>)
             });
-            let episodes = this.instances[selection].episodes;
-            episodesNav = episodes.map((ep,i) => {
-                return (<li key={selection+"_"+i} className="nav-item">
-                    <button key={selection+"_"+i} className={"nav-link " + (i === this.state.episodeSelection ? "active" : "")}  
-                            onClick={this.selectEpisode.bind(this, selection, i)}>{ep}</button>
-                </li>)
-            });
-            if(this.mediaCache[selection] && this.mediaCache[selection][this.state.episodeSelection]) {
-                let servers = this.mediaCache[selection][this.state.episodeSelection];
+            if(this.state.selections.origin) {
+                let episodes = this.instances[this.state.selections.origin].episodes;
+                episodesNav = episodes.map((ep,i) => {
+                    return (<li key={this.state.selections.origin+"_"+i} className="nav-item">
+                        <button key={this.state.selections.origin+"_"+i} className={"nav-link " + (i === this.state.selections.episodeSelection ? "active" : "")}  
+                                onClick={this.selectEpisode.bind(this, this.state.selections.origin, i)}>{ep}</button>
+                    </li>)
+                });
+            }
+            if(this.mediaCache[this.state.selections.origin] && this.mediaCache[this.state.selections.origin][this.state.selections.episodeSelection]) {
+                let servers = this.mediaCache[this.state.selections.origin][this.state.selections.episodeSelection];
                 let serverSorted = Object.keys(servers).sort(function(a, b) { return getServerScore(a) - getServerScore(b)})
-                let serverSelection = this.state.serverSelection ? this.state.serverSelection : serverSorted[0];
                 serversNav = serverSorted.map(k => {
-                    return (<li key={selection+"_"+this.state.episodeSelection+"_"+k} className="nav-item">
-                        <button key={selection+"_"+this.state.episodeSelection+"_"+k} className={"nav-link " + (k === serverSelection ? "active" : "")}  
-                                onClick={this.selectServer.bind(this, selection, this.state.episodeSelection, k)}>{k}</button>
+                    return (<li key={this.state.selections.origin+"_"+this.state.selections.episodeSelection+"_"+k} className="nav-item">
+                        <button key={this.state.selections.origin+"_"+this.state.selections.episodeSelection+"_"+k} className={"nav-link " + (k === this.state.selections.serverSelection ? "active" : "")}  
+                                onClick={this.selectServer.bind(this, this.state.selections.origin, this.state.selections.episodeSelection, k)}>{k}</button>
                     </li>)
                 })
             }
@@ -225,9 +279,9 @@ class Movie extends React.Component {
             <h3>{this.state.movieInfo.title ? this.state.movieInfo.title : "Loading..."}</h3>
              {this.state.movieSrcs.length === 0 ? null : 
                            ( this.state.movieSrcs[0].type !== "iframe" ? 
-                                    <JWMoviePlayer key={this.state.selection+"_"+this.state.episodeSelection+"_"+this.state.serverSelection} movieSrcs={this.state.movieSrcs}/> :
-                                    <IFramePlayer  key={this.state.selection+"_"+this.state.episodeSelection+"_"+this.state.serverSelection} iframeSrc={this.state.movieSrcs.length ? this.state.movieSrcs[0].src : ""}/>) }
-                 {this.state.loading.player ? (<img src="./loading.gif"/>) : null}
+                                    <JWMoviePlayer key={this.state.selections.origin+"_"+this.state.selections.episodeSelection+"_"+this.state.selections.serverSelection} movieSrcs={this.state.movieSrcs}/> :
+                                    <IFramePlayer  key={this.state.selections.origin+"_"+this.state.selections.episodeSelection+"_"+this.state.selections.serverSelection} iframeSrc={this.state.movieSrcs.length ? this.state.movieSrcs[0].src : ""}/>) }
+                 {this.state.loading.player ? (<img src="/loading.gif"/>) : null}
             <div className="card" style={{"textAlign": "left"}}>
               <div className="card-header">
                 <ul className="nav nav-pills card-header-pills">
