@@ -21,7 +21,7 @@ function App() {
        {/* A <Switch> looks through its children <Route>s and
             renders the first one that matches the current URL. */}
         <Switch>
-          <Route path="/movie/:id/:origin?/:episode?" component={Movie}>
+          <Route path="/movie/:id/:origin?/:episode?/:server?" component={Movie}>
           </Route>
           <Route path="/">
             <Search />

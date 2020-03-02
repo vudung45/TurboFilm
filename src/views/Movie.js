@@ -45,13 +45,13 @@ function getServerScore(svName){
     return 100;
 }
 
-function generateHistoryLink(movieId, origin, episode) {
-    let path = [movieId, origin, episode];
+function generateHistoryLink(movieId, origin, episode, server) {
+    let path = [movieId, origin, episode, server];
     let url = "/movie"
     for(const subPath of path) {
         if(subPath == null)
             return url;
-        url += "/"+subPath
+        url += "/"+encodeURIComponent(subPath)
     }
     return url;
 }
@@ -94,10 +94,12 @@ class Movie extends React.Component {
         let movieId =  this.props.match.params.id;
         const params = new URLSearchParams(this.props.location.search); 
         this.selections = {
-                origin: this.props.match.params.origin, 
-                episodeSelection: parseInt(this.props.match.params.episode),
-                serverSelection: this.props.match.params.server
+                origin: decodeURIComponent(this.props.match.params.origin), 
+                episodeSelection: parseInt(decodeURIComponent(this.props.match.params.episode)),
+                serverSelection: decodeURIComponent(this.props.match.params.server)
         }
+
+        console.log(this.selections);
 
         this.setState({loading : {origins: true, episodes:true}});
 
@@ -134,7 +136,7 @@ class Movie extends React.Component {
         })
     }
 
-    selectOrigin(instanceId) {
+    selectOrigin(instanceId, manual=false) {
         if(!(instanceId in this.instances))
             return;
 
@@ -154,7 +156,7 @@ class Movie extends React.Component {
         this.selectEpisode(instanceId, correspondingEpisode);
     }
 
-    selectEpisode(instanceId, ep) {
+    selectEpisode(instanceId, ep, manual=false) {
         if(!(instanceId in this.instances) || !(this.instances[instanceId].episodes.length > ep))
             return;
         
@@ -163,8 +165,12 @@ class Movie extends React.Component {
             origin: instanceId, 
             episodeSelection: ep
         }
+
+        if(manual) // reset server selection on manual click
+            this.selections.serverSelection = null;
+
         this.setState({loading : {servers: true, player: true}});
-        this.setState({selections: { episodeSelection : ep,  origin: instanceId}, movieSrcs: []});
+        this.setState({selections: this.selections, movieSrcs: []});
         if(this.mediaCache[instanceId] && this.mediaCache[instanceId][ep]) {
             this.setState({loading : {servers: false, player: false}});
             if(!(this.selections.serverSelection in this.mediaCache[instanceId][ep])){
@@ -208,7 +214,7 @@ class Movie extends React.Component {
                     })
                 });
                 console.log(this.selections.serverSelection);
-                if(!(this.selections.serverSelection in this.mediaCache[instanceId][ep]))
+                if(!this.selections.serverSelection || !(this.selections.serverSelection in this.mediaCache[instanceId][ep]))
                     this.selections.serverSelection = Object.keys(this.mediaCache[instanceId][ep]).sort(function(a, b) { return getServerScore(a) - getServerScore(b)})[0]
                 
                 this.selectServer(instanceId, ep, this.selections.serverSelection);
@@ -223,11 +229,11 @@ class Movie extends React.Component {
     componentDidUpdate(prevProps) {
         if(this.state.movieInfo){
             window.history.replaceState({}, this.state.movieInfo["title"], 
-                generateHistoryLink(this.state.movieInfo["_id"], this.state.selections.origin, this.state.selections.episodeSelection));
+                generateHistoryLink(this.state.movieInfo["_id"], this.state.selections.origin, this.state.selections.episodeSelection, this.state.selections.serverSelection));
         }
     }
 
-    selectServer(instanceId, ep, serverName){
+    selectServer(instanceId, ep, serverName, manual = false){
         this.selections = {
             ...this.selections,
             origin: instanceId, 
@@ -250,7 +256,7 @@ class Movie extends React.Component {
             originsNav = Object.keys(this.instances).map(key => {
                 return (<li key={key} className="nav-item">
                         <button key={key} className={"nav-link " + (key == this.state.selections.origin ? "active" : "")} 
-                         onClick={this.selectOrigin.bind(this, key)}>{this.instances[key].origin}</button>
+                         onClick={this.selectOrigin.bind(this, key), true}>{this.instances[key].origin}</button>
                       </li>)
             });
             if(this.state.selections.origin) {
@@ -258,7 +264,7 @@ class Movie extends React.Component {
                 episodesNav = episodes.map((ep,i) => {
                     return (<li key={this.state.selections.origin+"_"+i} className="nav-item">
                         <button key={this.state.selections.origin+"_"+i} className={"nav-link " + (i === this.state.selections.episodeSelection ? "active" : "")}  
-                                onClick={this.selectEpisode.bind(this, this.state.selections.origin, i)}>{ep}</button>
+                                onClick={this.selectEpisode.bind(this, this.state.selections.origin, i, true)}>{ep}</button>
                     </li>)
                 });
             }
@@ -268,7 +274,7 @@ class Movie extends React.Component {
                 serversNav = serverSorted.map(k => {
                     return (<li key={this.state.selections.origin+"_"+this.state.selections.episodeSelection+"_"+k} className="nav-item">
                         <button key={this.state.selections.origin+"_"+this.state.selections.episodeSelection+"_"+k} className={"nav-link " + (k === this.state.selections.serverSelection ? "active" : "")}  
-                                onClick={this.selectServer.bind(this, this.state.selections.origin, this.state.selections.episodeSelection, k)}>{k}</button>
+                                onClick={this.selectServer.bind(this, this.state.selections.origin, this.state.selections.episodeSelection, k, true)}>{k}</button>
                     </li>)
                 })
             }
