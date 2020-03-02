@@ -256,7 +256,7 @@ class Movie extends React.Component {
             originsNav = Object.keys(this.instances).map(key => {
                 return (<li key={key} className="nav-item">
                         <button key={key} className={"nav-link " + (key == this.state.selections.origin ? "active" : "")} 
-                         onClick={this.selectOrigin.bind(this, key), true}>{this.instances[key].origin}</button>
+                         onClick={this.selectOrigin.bind(this, key, true)}>{this.instances[key].origin}</button>
                       </li>)
             });
             if(this.state.selections.origin) {
